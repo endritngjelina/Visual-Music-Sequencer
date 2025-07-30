@@ -1,0 +1,1101 @@
+.value-display {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #3b82f6;
+            min-width: 70px;
+            text-align: center;
+            padding: 4px 8px;
+            background: rgba(59,<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Music Sequencer Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: #0f0f23;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #1a1a40 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #2d1b35 0%, transparent 50%),
+                linear-gradient(135deg, #0f0f23 0%, #1a1a35 50%, #2d1b35 100%);
+            color: #ffffff;
+            overflow-x: auto;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3.2rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 35%, #f472b6 70%, #fbbf24 100%);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientFlow 8s ease-in-out infinite;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 40px rgba(124, 58, 237, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            font-weight: 400;
+            margin-top: 8px;
+            opacity: 0.9;
+        }
+
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        .controls-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(24px) saturate(180%);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.4),
+                0 10px 10px -5px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .controls-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #b8b8d1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            padding: 16px 32px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 6px -1px rgba(59, 130, 246, 0.3),
+                0 2px 4px -1px rgba(59, 130, 246, 0.2);
+            text-transform: none;
+            letter-spacing: 0.025em;
+            position: relative;
+            overflow: hidden;
+            min-width: 120px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 
+                0 10px 15px -3px rgba(59, 130, 246, 0.4),
+                0 4px 6px -2px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn.playing {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 
+                0 4px 6px -1px rgba(239, 68, 68, 0.3),
+                0 2px 4px -1px rgba(239, 68, 68, 0.2);
+            animation: playingPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes playingPulse {
+            0%, 100% { box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3), 0 2px 4px -1px rgba(239, 68, 68, 0.2); }
+            50% { box-shadow: 0 8px 25px -5px rgba(239, 68, 68, 0.5), 0 10px 10px -5px rgba(239, 68, 68, 0.3); }
+        }
+
+        .btn.active {
+            background: linear-gradient(45deg, #4ecdc4 0%, #44a08d 100%);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        input[type="range"] {
+            width: 140px;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(71, 85, 105, 0.3);
+            outline: none;
+            -webkit-appearance: none;
+            position: relative;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-track {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(71, 85, 105, 0.3);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            cursor: pointer;
+            box-shadow: 
+                0 4px 8px rgba(59, 130, 246, 0.3),
+                0 0 0 3px rgba(59, 130, 246, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 
+                0 6px 12px rgba(59, 130, 246, 0.4),
+                0 0 0 5px rgba(59, 130, 246, 0.15);
+        }
+
+        select {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            color: white;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+
+        select:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .sequencer-grid {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.08);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 140px repeat(16, 56px);
+            gap: 3px;
+            min-width: 1040px;
+        }
+
+        .track-label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(51, 65, 85, 0.7) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            height: 52px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .track-label::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: currentColor;
+            opacity: 0.6;
+        }
+
+        .track-label:hover {
+            transform: translateX(2px);
+            border-color: rgba(148, 163, 184, 0.2);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #94a3b8;
+            height: 32px;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .step-header:hover {
+            background: rgba(51, 65, 85, 0.5);
+            color: #cbd5e1;
+        }
+
+        .step-button {
+            width: 56px;
+            height: 52px;
+            border: 2px solid rgba(71, 85, 105, 0.3);
+            border-radius: 12px;
+            background: rgba(30, 41, 59, 0.4);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+        }
+
+        .step-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .step-button:hover {
+            border-color: rgba(59, 130, 246, 0.6);
+            background: rgba(59, 130, 246, 0.1);
+            transform: scale(1.05) translateY(-1px);
+            box-shadow: 0 8px 25px -8px rgba(59, 130, 246, 0.3);
+        }
+
+        .step-button:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .step-button.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-color: #3b82f6;
+            box-shadow: 
+                0 8px 25px -8px rgba(59, 130, 246, 0.6),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .step-button.active::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+        }
+
+        .step-button.current {
+            animation: currentStep 0.6s ease-in-out;
+            border-color: #10b981;
+            box-shadow: 
+                0 0 30px rgba(16, 185, 129, 0.6),
+                0 0 10px rgba(16, 185, 129, 0.8);
+            z-index: 1;
+        }
+
+        @keyframes currentStep {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.6), 0 0 10px rgba(16, 185, 129, 0.8);
+            }
+            50% { 
+                transform: scale(1.15);
+                box-shadow: 0 0 40px rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 1);
+            }
+        }
+
+        .visualizer {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            height: 240px;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            gap: 2px;
+            border: 1px solid rgba(148, 163, 184, 0.08);
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visualizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at center top, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at center bottom, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .bar {
+            width: 4px;
+            background: linear-gradient(to top, 
+                #10b981 0%, 
+                #3b82f6 30%, 
+                #8b5cf6 60%, 
+                #f59e0b 100%);
+            border-radius: 2px 2px 0 0;
+            transition: height 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 3px;
+            position: relative;
+            opacity: 0.9;
+        }
+
+        .bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 2px;
+            filter: blur(1px);
+        }
+
+        .pattern-controls {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            border: 1px solid rgba(148, 163, 184, 0.08);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .pattern-btn {
+            background: rgba(51, 65, 85, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            color: #e2e8f0;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pattern-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .pattern-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(59, 130, 246, 0.3);
+        }
+
+        .pattern-btn:hover::before {
+            left: 100%;
+        }
+
+        .pattern-btn:active {
+            transform: translateY(0);
+        }
+
+        .swing-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .value-display {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #3b82f6;
+            min-width: 70px;
+            text-align: center;
+            padding: 4px 8px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+
+        .control-group:hover {
+            background: rgba(51, 65, 85, 0.4);
+            border-color: rgba(148, 163, 184, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .control-group label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .controls-panel {
+                padding: 24px 16px;
+                gap: 20px;
+            }
+            
+            .grid-container {
+                grid-template-columns: 120px repeat(16, 48px);
+            }
+            
+            .step-button {
+                width: 48px;
+                height: 44px;
+            }
+
+            .track-label {
+                padding: 0 16px;
+                height: 44px;
+                font-size: 0.85rem;
+            }
+
+            .visualizer {
+                height: 180px;
+                padding: 24px;
+            }
+
+            .control-group {
+                padding: 12px;
+                min-width: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 16px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .controls-panel {
+                gap: 16px;
+            }
+
+            .grid-container {
+                grid-template-columns: 100px repeat(16, 42px);
+                gap: 2px;
+            }
+
+            .step-button {
+                width: 42px;
+                height: 38px;
+            }
+
+            .track-label {
+                padding: 0 12px;
+                height: 38px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>Visual Music Sequencer Pro</h1>
+            <p>Professional-grade drum machine with real-time visualization</p>
+        </div>
+
+        <div class="controls-panel">
+            <div class="control-group">
+                <label>Transport</label>
+                <button id="playBtn" class="btn">Play</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Tempo (BPM)</label>
+                <input type="range" id="tempoSlider" min="60" max="180" value="120">
+                <div class="value-display" id="tempoValue">120</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Kit Selection</label>
+                <select id="kitSelect">
+                    <option value="electronic">Electronic</option>
+                    <option value="acoustic">Acoustic</option>
+                    <option value="trap">Trap</option>
+                    <option value="vintage">Vintage</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Master Volume</label>
+                <input type="range" id="volumeSlider" min="0" max="100" value="75">
+                <div class="value-display" id="volumeValue">75%</div>
+            </div>
+            
+            <div class="control-group swing-control">
+                <label>Swing</label>
+                <input type="range" id="swingSlider" min="0" max="20" value="0">
+                <div class="value-display" id="swingValue">0%</div>
+            </div>
+        </div>
+
+        <div class="visualizer" id="visualizer">
+            <!-- Audio visualization bars will be generated here -->
+        </div>
+
+        <div class="sequencer-grid">
+            <div class="grid-container" id="gridContainer">
+                <!-- Grid will be generated here -->
+            </div>
+        </div>
+
+        <div class="pattern-controls">
+            <button class="pattern-btn" onclick="clearAll()">Clear All</button>
+            <button class="pattern-btn" onclick="fillRandom()">Random Fill</button>
+            <button class="pattern-btn" onclick="savePattern()">Save Pattern</button>
+            <button class="pattern-btn" onclick="loadPattern()">Load Pattern</button>
+            <button class="pattern-btn" onclick="exportPattern()">Export Audio</button>
+        </div>
+    </div>
+
+    <script>
+        class VisualMusicSequencer {
+            constructor() {
+                this.isPlaying = false;
+                this.currentStep = 0;
+                this.tempo = 120;
+                this.stepInterval = null;
+                this.audioContext = null;
+                this.masterGain = null;
+                this.pattern = {};
+                this.swing = 0;
+                this.currentKit = 'electronic';
+                
+                this.tracks = [
+                    { name: 'Kick', frequency: 60, color: '#ff6b6b' },
+                    { name: 'Snare', frequency: 200, color: '#4ecdc4' },
+                    { name: 'Hi-Hat', frequency: 8000, color: '#ffd93d' },
+                    { name: 'Open Hat', frequency: 12000, color: '#ff8e8e' },
+                    { name: 'Crash', frequency: 15000, color: '#6bcf7f' },
+                    { name: 'Ride', frequency: 10000, color: '#45b7d1' },
+                    { name: 'Clap', frequency: 1000, color: '#a855f7' },
+                    { name: 'Perc', frequency: 500, color: '#f97316' }
+                ];
+
+                this.kits = {
+                    electronic: {
+                        kick: { freq: 60, decay: 0.5, type: 'sine' },
+                        snare: { freq: 200, decay: 0.2, noise: true },
+                        hihat: { freq: 8000, decay: 0.1, noise: true },
+                        openhat: { freq: 12000, decay: 0.3, noise: true },
+                        crash: { freq: 15000, decay: 1.0, noise: true },
+                        ride: { freq: 10000, decay: 0.5, noise: true },
+                        clap: { freq: 1000, decay: 0.15, noise: true },
+                        perc: { freq: 500, decay: 0.2, type: 'triangle' }
+                    },
+                    acoustic: {
+                        kick: { freq: 50, decay: 0.6, type: 'sine' },
+                        snare: { freq: 250, decay: 0.25, noise: true },
+                        hihat: { freq: 9000, decay: 0.08, noise: true },
+                        openhat: { freq: 11000, decay: 0.4, noise: true },
+                        crash: { freq: 16000, decay: 1.2, noise: true },
+                        ride: { freq: 8000, decay: 0.6, noise: true },
+                        clap: { freq: 800, decay: 0.18, noise: true },
+                        perc: { freq: 400, decay: 0.25, type: 'sawtooth' }
+                    },
+                    trap: {
+                        kick: { freq: 45, decay: 0.8, type: 'sine' },
+                        snare: { freq: 150, decay: 0.3, noise: true },
+                        hihat: { freq: 12000, decay: 0.05, noise: true },
+                        openhat: { freq: 14000, decay: 0.2, noise: true },
+                        crash: { freq: 18000, decay: 0.8, noise: true },
+                        ride: { freq: 7000, decay: 0.4, noise: true },
+                        clap: { freq: 1200, decay: 0.12, noise: true },
+                        perc: { freq: 300, decay: 0.15, type: 'square' }
+                    },
+                    vintage: {
+                        kick: { freq: 70, decay: 0.4, type: 'sine' },
+                        snare: { freq: 300, decay: 0.2, noise: true },
+                        hihat: { freq: 6000, decay: 0.12, noise: true },
+                        openhat: { freq: 8000, decay: 0.35, noise: true },
+                        crash: { freq: 12000, decay: 1.5, noise: true },
+                        ride: { freq: 5000, decay: 0.7, noise: true },
+                        clap: { freq: 600, decay: 0.2, noise: true },
+                        perc: { freq: 800, decay: 0.3, type: 'triangle' }
+                    }
+                };
+
+                this.init();
+            }
+
+            async init() {
+                await this.initAudio();
+                this.initPattern();
+                this.initUI();
+                this.initVisualizer();
+                this.bindEvents();
+            }
+
+            async initAudio() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.connect(this.audioContext.destination);
+                this.masterGain.gain.value = 0.75;
+            }
+
+            initPattern() {
+                this.tracks.forEach((track, trackIndex) => {
+                    this.pattern[trackIndex] = new Array(16).fill(false);
+                });
+            }
+
+            initUI() {
+                const container = document.getElementById('gridContainer');
+                
+                // Create header row
+                const emptyCell = document.createElement('div');
+                container.appendChild(emptyCell);
+                
+                for (let step = 0; step < 16; step++) {
+                    const header = document.createElement('div');
+                    header.className = 'step-header';
+                    header.textContent = step + 1;
+                    container.appendChild(header);
+                }
+
+                // Create track rows
+                this.tracks.forEach((track, trackIndex) => {
+                    const label = document.createElement('div');
+                    label.className = 'track-label';
+                    label.textContent = track.name;
+                    label.style.color = track.color;
+                    container.appendChild(label);
+
+                    for (let step = 0; step < 16; step++) {
+                        const button = document.createElement('div');
+                        button.className = 'step-button';
+                        button.dataset.track = trackIndex;
+                        button.dataset.step = step;
+                        
+                        button.addEventListener('click', () => {
+                            this.toggleStep(trackIndex, step);
+                        });
+                        
+                        container.appendChild(button);
+                    }
+                });
+            }
+
+            initVisualizer() {
+                const visualizer = document.getElementById('visualizer');
+                for (let i = 0; i < 64; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.height = '2px';
+                    visualizer.appendChild(bar);
+                }
+                this.bars = visualizer.querySelectorAll('.bar');
+            }
+
+            bindEvents() {
+                document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
+                document.getElementById('tempoSlider').addEventListener('input', (e) => this.setTempo(e.target.value));
+                document.getElementById('volumeSlider').addEventListener('input', (e) => this.setVolume(e.target.value));
+                document.getElementById('swingSlider').addEventListener('input', (e) => this.setSwing(e.target.value));
+                document.getElementById('kitSelect').addEventListener('change', (e) => this.setKit(e.target.value));
+            }
+
+            toggleStep(track, step) {
+                this.pattern[track][step] = !this.pattern[track][step];
+                this.updateStepUI(track, step);
+            }
+
+            updateStepUI(track, step) {
+                const button = document.querySelector(`[data-track="${track}"][data-step="${step}"]`);
+                if (this.pattern[track][step]) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            }
+
+            async togglePlay() {
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+
+                if (this.isPlaying) {
+                    this.stop();
+                } else {
+                    this.play();
+                }
+            }
+
+            play() {
+                this.isPlaying = true;
+                document.getElementById('playBtn').textContent = 'Stop';
+                document.getElementById('playBtn').classList.add('playing');
+                
+                const stepDuration = (60 / this.tempo / 4) * 1000;
+                
+                this.stepInterval = setInterval(() => {
+                    this.playStep();
+                    this.updateVisualizer();
+                    this.currentStep = (this.currentStep + 1) % 16;
+                }, stepDuration);
+            }
+
+            stop() {
+                this.isPlaying = false;
+                document.getElementById('playBtn').textContent = 'Play';
+                document.getElementById('playBtn').classList.remove('playing');
+                
+                if (this.stepInterval) {
+                    clearInterval(this.stepInterval);
+                }
+                
+                this.currentStep = 0;
+                this.clearCurrentStepHighlight();
+            }
+
+            playStep() {
+                this.clearCurrentStepHighlight();
+                this.highlightCurrentStep();
+                
+                this.tracks.forEach((track, trackIndex) => {
+                    if (this.pattern[trackIndex][this.currentStep]) {
+                        this.playSound(track.name.toLowerCase().replace(/[\s-]/g, ''));
+                    }
+                });
+            }
+
+            highlightCurrentStep() {
+                const buttons = document.querySelectorAll(`[data-step="${this.currentStep}"]`);
+                buttons.forEach(button => {
+                    if (button.classList.contains('step-button')) {
+                        button.classList.add('current');
+                    }
+                });
+            }
+
+            clearCurrentStepHighlight() {
+                document.querySelectorAll('.step-button.current').forEach(button => {
+                    button.classList.remove('current');
+                });
+            }
+
+            playSound(soundName) {
+                const kit = this.kits[this.currentKit];
+                const sound = kit[soundName] || kit.kick;
+                
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                if (sound.noise) {
+                    // Create noise for percussion sounds
+                    const bufferSize = this.audioContext.sampleRate * sound.decay;
+                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+                    
+                    const noiseSource = this.audioContext.createBufferSource();
+                    noiseSource.buffer = buffer;
+                    
+                    const filter = this.audioContext.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = sound.freq;
+                    filter.Q.value = 5;
+                    
+                    noiseSource.connect(filter);
+                    filter.connect(gainNode);
+                    
+                    gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + sound.decay);
+                    
+                    noiseSource.start(this.audioContext.currentTime);
+                    noiseSource.stop(this.audioContext.currentTime + sound.decay);
+                } else {
+                    // Create tonal sounds
+                    oscillator.type = sound.type || 'sine';
+                    oscillator.frequency.setValueAtTime(sound.freq, this.audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(sound.freq * 0.5, this.audioContext.currentTime + sound.decay);
+                    
+                    oscillator.connect(gainNode);
+                    
+                    gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + sound.decay);
+                    
+                    oscillator.start(this.audioContext.currentTime);
+                    oscillator.stop(this.audioContext.currentTime + sound.decay);
+                }
+                
+                gainNode.connect(this.masterGain);
+            }
+
+            updateVisualizer() {
+                this.bars.forEach((bar, index) => {
+                    const height = Math.random() * 160 + 20;
+                    bar.style.height = `${height}px`;
+                    
+                    setTimeout(() => {
+                        bar.style.height = '2px';
+                    }, 100);
+                });
+            }
+
+            setTempo(value) {
+                this.tempo = parseInt(value);
+                document.getElementById('tempoValue').textContent = value;
+                
+                if (this.isPlaying) {
+                    this.stop();
+                    this.play();
+                }
+            }
+
+            setVolume(value) {
+                this.masterGain.gain.value = value / 100;
+                document.getElementById('volumeValue').textContent = `${value}%`;
+            }
+
+            setSwing(value) {
+                this.swing = parseInt(value);
+                document.getElementById('swingValue').textContent = `${value}%`;
+            }
+
+            setKit(kitName) {
+                this.currentKit = kitName;
+            }
+        }
+
+        // Global functions for pattern controls
+        function clearAll() {
+            sequencer.pattern = {};
+            sequencer.initPattern();
+            document.querySelectorAll('.step-button.active').forEach(button => {
+                button.classList.remove('active');
+            });
+        }
+
+        function fillRandom() {
+            clearAll();
+            sequencer.tracks.forEach((track, trackIndex) => {
+                for (let step = 0; step < 16; step++) {
+                    if (Math.random() > 0.7) {
+                        sequencer.pattern[trackIndex][step] = true;
+                        sequencer.updateStepUI(trackIndex, step);
+                    }
+                }
+            });
+        }
+
+        function savePattern() {
+            const pattern = JSON.stringify({
+                pattern: sequencer.pattern,
+                tempo: sequencer.tempo,
+                kit: sequencer.currentKit
+            });
+            
+            const blob = new Blob([pattern], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sequencer-pattern.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadPattern() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            sequencer.pattern = data.pattern;
+                            sequencer.tempo = data.tempo || 120;
+                            sequencer.currentKit = data.kit || 'electronic';
+                            
+                            document.getElementById('tempoSlider').value = sequencer.tempo;
+                            document.getElementById('tempoValue').textContent = sequencer.tempo;
+                            document.getElementById('kitSelect').value = sequencer.currentKit;
+                            
+                            // Update UI
+                            sequencer.tracks.forEach((track, trackIndex) => {
+                                for (let step = 0; step < 16; step++) {
+                                    sequencer.updateStepUI(trackIndex, step);
+                                }
+                            });
+                        } catch (err) {
+                            alert('Invalid pattern file');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            
+            input.click();
+        }
+
+        function exportPattern() {
+            alert('Audio export would require additional server-side processing. Pattern saved as JSON instead.');
+            savePattern();
+        }
+
+        // Initialize the sequencer
+        let sequencer;
+        document.addEventListener('DOMContentLoaded', () => {
+            sequencer = new VisualMusicSequencer();
+        });
+    </script>
+</body>
+</html>
