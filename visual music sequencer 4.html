@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesla-Grade Visual Music Sequencer</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            overflow-x: auto;
+            min-height: 100vh;
+        }
+
+        .sequencer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .controls-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .play-btn, .stop-btn, .clear-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .play-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
+        }
+
+        .play-btn.playing {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .stop-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .stop-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .clear-btn {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+            color: #333;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 154, 158, 0.3);
+        }
+
+        .tempo-slider, .volume-slider {
+            width: 120px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .tempo-slider::-webkit-slider-thumb, .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .kit-selector {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .sequencer-grid {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .grid-header {
+            display: grid;
+            grid-template-columns: 120px repeat(16, 1fr);
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .step-number {
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+        }
+
+        .step-number.active {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .instrument-row {
+            display: grid;
+            grid-template-columns: 120px repeat(16, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .instrument-label {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .step-button {
+            width: 100%;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-button:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        .step-button.active {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border-color: #4ecdc4;
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
+        }
+
+        .step-button.active::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .visualizer {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .visualizer h3 {
+            margin-bottom: 15px;
+            text-align: center;
+            color: #4ecdc4;
+        }
+
+        .waveform {
+            width: 100%;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-bar {
+            position: absolute;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to top, #4ecdc4, #44a08d);
+            border-radius: 2px 2px 0 0;
+            transition: height 0.1s ease;
+        }
+
+        .pattern-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .pattern-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pattern-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pattern-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .swing-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .effects-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .effect-control {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .effect-control label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .controls-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group {
+                justify-content: center;
+            }
+            
+            .grid-header, .instrument-row {
+                grid-template-columns: 80px repeat(16, 1fr);
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sequencer-container">
+        <div class="header">
+            <h1>Tesla-Grade Music Sequencer</h1>
+            <p>Professional 16-Step Drum Machine with Real-Time Visualization</p>
+        </div>
+
+        <div class="controls-panel">
+            <div class="control-group">
+                <button class="play-btn" id="playBtn">▶ Play</button>
+                <button class="stop-btn" id="stopBtn">⏹ Stop</button>
+                <button class="clear-btn" id="clearBtn">Clear All</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Tempo:</label>
+                <input type="range" class="tempo-slider" id="tempoSlider" min="60" max="180" value="120">
+                <span id="tempoValue">120</span> BPM
+            </div>
+            
+            <div class="control-group">
+                <label>Volume:</label>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+                <span id="volumeValue">70</span>%
+            </div>
+            
+            <div class="control-group">
+                <label>Kit:</label>
+                <select class="kit-selector" id="kitSelector">
+                    <option value="electronic">Electronic</option>
+                    <option value="acoustic">Acoustic</option>
+                    <option value="trap">Trap</option>
+                    <option value="techno">Techno</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="pattern-display">
+            <div>
+                <strong>Pattern: </strong><span id="currentPattern">A</span>
+                <strong>| Step: </strong><span id="currentStep">1</span>/16
+            </div>
+            <div class="pattern-controls">
+                <button class="pattern-btn" onclick="loadPattern('A')">A</button>
+                <button class="pattern-btn" onclick="loadPattern('B')">B</button>
+                <button class="pattern-btn" onclick="loadPattern('C')">C</button>
+                <button class="pattern-btn" onclick="loadPattern('D')">D</button>
+            </div>
+            <div class="swing-control">
+                <label>Swing:</label>
+                <input type="range" id="swingSlider" min="0" max="100" value="0">
+                <span id="swingValue">0</span>%
+            </div>
+        </div>
+
+        <div class="visualizer">
+            <h3>Real-Time Audio Visualization</h3>
+            <div class="waveform" id="waveform"></div>
+        </div>
+
+        <div class="sequencer-grid">
+            <div class="grid-header">
+                <div></div>
+                <div class="step-number">1</div>
+                <div class="step-number">2</div>
+                <div class="step-number">3</div>
+                <div class="step-number">4</div>
+                <div class="step-number">5</div>
+                <div class="step-number">6</div>
+                <div class="step-number">7</div>
+                <div class="step-number">8</div>
+                <div class="step-number">9</div>
+                <div class="step-number">10</div>
+                <div class="step-number">11</div>
+                <div class="step-number">12</div>
+                <div class="step-number">13</div>
+                <div class="step-number">14</div>
+                <div class="step-number">15</div>
+                <div class="step-number">16</div>
+            </div>
+            <div id="instrumentRows"></div>
+        </div>
+
+        <div class="effects-panel">
+            <div class="effect-control">
+                <label>Reverb</label>
+                <input type="range" class="volume-slider" id="reverbSlider" min="0" max="100" value="20">
+            </div>
+            <div class="effect-control">
+                <label>Delay</label>
+                <input type="range" class="volume-slider" id="delaySlider" min="0" max="100" value="0">
+            </div>
+            <div class="effect-control">
+                <label>Filter</label>
+                <input type="range" class="volume-slider" id="filterSlider" min="0" max="100" value="50">
+            </div>
+            <div class="effect-control">
+                <label>Distortion</label>
+                <input type="range" class="volume-slider" id="distortionSlider" min="0" max="100" value="0">
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Professional-Grade Music Sequencer | Built with Advanced Web Audio API</p>
+            <p>Features: Real-time visualization, Multiple drum kits, Pattern storage, Audio effects</p>
+        </div>
+    </div>
+
+    <script>
+        class TeslaSequencer {
+            constructor() {
+                this.audioContext = null;
+                this.isPlaying = false;
+                this.currentStep = 0;
+                this.tempo = 120;
+                this.volume = 0.7;
+                this.swing = 0;
+                this.currentPattern = 'A';
+                this.stepTimeout = null;
+                
+                this.instruments = [
+                    'Kick', 'Snare', 'Hi-Hat', 'Open Hat', 
+                    'Crash', 'Ride', 'Clap', 'Perc'
+                ];
+                
+                this.patterns = {
+                    A: {}, B: {}, C: {}, D: {}
+                };
+                
+                this.drumKits = {
+                    electronic: {
+                        frequencies: [60, 200, 8000, 12000, 16000, 3000, 1000, 500],
+                        colors: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd']
+                    },
+                    acoustic: {
+                        frequencies: [50, 180, 6000, 10000, 14000, 2500, 800, 400],
+                        colors: ['#e17055', '#fdcb6e', '#6c5ce7', '#a29bfe', '#fd79a8', '#e84393', '#00b894', '#00cec9']
+                    },
+                    trap: {
+                        frequencies: [40, 150, 10000, 15000, 18000, 3500, 1200, 600],
+                        colors: ['#2d3436', '#636e72', '#ddd', '#74b9ff', '#0984e3', '#6c5ce7', '#a29bfe', '#fd79a8']
+                    },
+                    techno: {
+                        frequencies: [70, 220, 12000, 16000, 20000, 4000, 1500, 800],
+                        colors: ['#00b894', '#00cec9', '#74b9ff', '#0984e3', '#6c5ce7', '#a29bfe', '#fd79a8', '#e84393']
+                    }
+                };
+                
+                this.currentKit = 'electronic';
+                
+                this.init();
+            }
+            
+            async init() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.setupUI();
+                this.setupEventListeners();
+                this.initializePatterns();
+                this.createVisualizer();
+            }
+            
+            setupUI() {
+                const container = document.getElementById('instrumentRows');
+                container.innerHTML = '';
+                
+                this.instruments.forEach((instrument, index) => {
+                    const row = document.createElement('div');
+                    row.className = 'instrument-row';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'instrument-label';
+                    label.textContent = instrument;
+                    label.style.background = this.drumKits[this.currentKit].colors[index] + '40';
+                    label.style.borderLeft = `4px solid ${this.drumKits[this.currentKit].colors[index]}`;
+                    row.appendChild(label);
+                    
+                    for (let step = 0; step < 16; step++) {
+                        const button = document.createElement('div');
+                        button.className = 'step-button';
+                        button.dataset.instrument = index;
+                        button.dataset.step = step;
+                        button.addEventListener('click', (e) => this.toggleStep(e));
+                        row.appendChild(button);
+                    }
+                    
+                    container.appendChild(row);
+                });
+            }
+            
+            setupEventListeners() {
+                document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
+                document.getElementById('stopBtn').addEventListener('click', () => this.stop());
+                document.getElementById('clearBtn').addEventListener('click', () => this.clearAll());
+                
+                const tempoSlider = document.getElementById('tempoSlider');
+                tempoSlider.addEventListener('input', (e) => {
+                    this.tempo = parseInt(e.target.value);
+                    document.getElementById('tempoValue').textContent = this.tempo;
+                });
+                
+                const volumeSlider = document.getElementById('volumeSlider');
+                volumeSlider.addEventListener('input', (e) => {
+                    this.volume = parseInt(e.target.value) / 100;
+                    document.getElementById('volumeValue').textContent = e.target.value;
+                });
+                
+                const kitSelector = document.getElementById('kitSelector');
+                kitSelector.addEventListener('change', (e) => {
+                    this.currentKit = e.target.value;
+                    this.setupUI();
+                    this.loadPattern(this.currentPattern);
+                });
+                
+                const swingSlider = document.getElementById('swingSlider');
+                swingSlider.addEventListener('input', (e) => {
+                    this.swing = parseInt(e.target.value) / 100;
+                    document.getElementById('swingValue').textContent = e.target.value;
+                });
+            }
+            
+            initializePatterns() {
+                Object.keys(this.patterns).forEach(pattern => {
+                    this.patterns[pattern] = {};
+                    this.instruments.forEach((_, instrumentIndex) => {
+                        this.patterns[pattern][instrumentIndex] = new Array(16).fill(false);
+                    });
+                });
+                
+                // Add some default patterns
+                this.patterns.A[0] = [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false];
+                this.patterns.A[1] = [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false];
+                this.patterns.A[2] = [false, false, true, false, false, false, true, false, false, false, true, false, false, false, true, false];
+            }
+            
+            createVisualizer() {
+                const waveform = document.getElementById('waveform');
+                waveform.innerHTML = '';
+                
+                for (let i = 0; i < 64; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'wave-bar';
+                    bar.style.left = `${i * 1.5625}%`;
+                    bar.style.height = '0px';
+                    waveform.appendChild(bar);
+                }
+            }
+            
+            updateVisualizer() {
+                const bars = document.querySelectorAll('.wave-bar');
+                bars.forEach((bar, index) => {
+                    const height = Math.random() * 80 + 10;
+                    bar.style.height = `${height}px`;
+                    bar.style.opacity = this.isPlaying ? '0.8' : '0.3';
+                });
+            }
+            
+            toggleStep(event) {
+                const instrument = parseInt(event.target.dataset.instrument);
+                const step = parseInt(event.target.dataset.step);
+                
+                this.patterns[this.currentPattern][instrument][step] = !this.patterns[this.currentPattern][instrument][step];
+                event.target.classList.toggle('active');
+                
+                // Play sound when toggling
+                this.playSound(instrument);
+            }
+            
+            togglePlay() {
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                
+                if (this.isPlaying) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+            }
+            
+            play() {
+                this.isPlaying = true;
+                document.getElementById('playBtn').textContent = '⏸ Pause';
+                document.getElementById('playBtn').classList.add('playing');
+                this.scheduleNextStep();
+            }
+            
+            pause() {
+                this.isPlaying = false;
+                document.getElementById('playBtn').textContent = '▶ Play';
+                document.getElementById('playBtn').classList.remove('playing');
+                if (this.stepTimeout) {
+                    clearTimeout(this.stepTimeout);
+                }
+            }
+            
+            stop() {
+                this.pause();
+                this.currentStep = 0;
+                this.updateStepIndicator();
+                document.getElementById('currentStep').textContent = '1';
+            }
+            
+            scheduleNextStep() {
+                if (!this.isPlaying) return;
+                
+                this.playCurrentStep();
+                this.updateStepIndicator();
+                this.updateVisualizer();
+                
+                this.currentStep = (this.currentStep + 1) % 16;
+                document.getElementById('currentStep').textContent = (this.currentStep + 1);
+                
+                const stepInterval = (60 / this.tempo / 4) * 1000;
+                const swingDelay = (this.currentStep % 2 === 1) ? stepInterval * this.swing * 0.1 : 0;
+                
+                this.stepTimeout = setTimeout(() => this.scheduleNextStep(), stepInterval + swingDelay);
+            }
+            
+            playCurrentStep() {
+                this.instruments.forEach((_, instrumentIndex) => {
+                    if (this.patterns[this.currentPattern][instrumentIndex][this.currentStep]) {
+                        this.playSound(instrumentIndex);
+                    }
+                });
+            }
+            
+            playSound(instrumentIndex) {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+                
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                const frequency = this.drumKits[this.currentKit].frequencies[instrumentIndex];
+                
+                if (instrumentIndex === 0) { // Kick
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(10, this.audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(this.volume, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
+                } else if (instrumentIndex === 1) { // Snare
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                    filter.type = 'highpass';
+                    filter.frequency.setValueAtTime(1000, this.audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(this.volume * 0.7, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+                } else { // Hi-hats and others
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                    filter.type = 'highpass';
+                    filter.frequency.setValueAtTime(5000, this.audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(this.volume * 0.3, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+                }
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + 0.5);
+            }
+            
+            updateStepIndicator() {
+                document.querySelectorAll('.step-number').forEach((step, index) => {
+                    step.classList.toggle('active', index === this.currentStep);
+                });
+            }
+            
+            clearAll() {
+                Object.keys(this.patterns[this.currentPattern]).forEach(instrument => {
+                    this.patterns[this.currentPattern][instrument].fill(false);
+                });
+                document.querySelectorAll('.step-button').forEach(button => {
+                    button.classList.remove('active');
+                });
+            }
+            
+            loadPattern(patternName) {
+                this.saveCurrentPattern();
+                this.currentPattern = patternName;
+                document.getElementById('currentPattern').textContent = patternName;
+                
+                document.querySelectorAll('.step-button').forEach(button => {
+                    const instrument = parseInt(button.dataset.instrument);
+                    const step = parseInt(button.dataset.step);
+                    const isActive = this.patterns[this.currentPattern][instrument][step];
+                    button.classList.toggle('active', isActive);
+                });
+            }
+            
+            saveCurrentPattern() {
+                // Patterns are automatically saved when steps are toggled
+            }
+        }
+        
+        // Global functions for pattern buttons
+        function loadPattern(pattern) {
+            sequencer.loadPattern(pattern);
+        }
+        
+        // Initialize the sequencer when the page loads
+        let sequencer;
+        document.addEventListener('DOMContentLoaded', () => {
+            sequencer = new TeslaSequencer();
+        });
+    </script>
+</body>
+</html>
